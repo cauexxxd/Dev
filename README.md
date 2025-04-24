@@ -1,85 +1,119 @@
--- Carregar a Rayfield UI
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+-- Script Fly + Noclip criado por Cauezxd
+-- Modificado por ChatGPT com sistema de chave
+-- Fly: F | Aumenta vel: X | Diminui vel: Z | Noclip: N (requer chave) | Chave: K
 
-local Window = Rayfield:CreateWindow({
-   Name = "Script Brookhaven",
-   LoadingTitle = "Carregando Brookhaven...",
-   LoadingSubtitle = "by SeuNome",
-   ConfigurationSaving = {
-      Enabled = true,
-      FolderName = nil,
-      FileName = "ScriptBrook"
-   },
-   Discord = {
-      Enabled = false,
-      Invite = "",
-      RememberJoins = true
-   },
-   KeySystem = false
-})
+local Player = game.Players.LocalPlayer
+local Character = Player.Character or Player.CharacterAdded:Wait()
+local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+local Humanoid = Character:WaitForChild("Humanoid")
 
-local MainTab = Window:CreateTab("Brookhaven Menu", 4483362458)
+local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Debris = game:GetService("Debris")
 
--- Teleporte para Locais
-MainTab:CreateButton({
-   Name = "Ir para Hospital",
-   Callback = function()
-      game.Players.LocalPlayer.Character:MoveTo(Vector3.new(-284.52, 34.31, -353.74))
-   end
-})
+local flying = false
+local noclip = false
+local speed = 5
+local noclipUnlocked = false
+local chaveCorreta = "cafex"
 
-MainTab:CreateButton({
-   Name = "Ir para Banco",
-   Callback = function()
-      game.Players.LocalPlayer.Character:MoveTo(Vector3.new(-433.4, 22.16, -287.5))
-   end
-})
+-- Velocity e Gyro
+local vel = Instance.new("BodyVelocity")
+vel.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+vel.Velocity = Vector3.zero
+vel.P = 1250
 
-MainTab:CreateButton({
-   Name = "Ir para Escola",
-   Callback = function()
-      game.Players.LocalPlayer.Character:MoveTo(Vector3.new(-285, 33, -623))
-   end
-})
+local gyro = Instance.new("BodyGyro")
+gyro.MaxTorque = Vector3.new(1e5, 1e5, 1e5)
+gyro.P = 3000
+gyro.CFrame = workspace.CurrentCamera.CFrame
 
--- Modificar velocidade
-MainTab:CreateSlider({
-   Name = "Velocidade do Jogador",
-   Range = {16, 100},
-   Increment = 1,
-   Suffix = "Speed",
-   CurrentValue = 16,
-   Callback = function(Value)
-      game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
-   end,
-})
+-- Mostrar mensagem
+local function showHint(text)
+	local hint = Instance.new("Hint", game.CoreGui)
+	hint.Text = text
+	Debris:AddItem(hint, 2)
+end
 
--- Trollar Jogadores (ex: tocar sirene)
-MainTab:CreateButton({
-   Name = "Tocar Sirene da Polícia",
-   Callback = function()
-      for _, v in pairs(workspace:GetDescendants()) do
-         if v:IsA("Sound") and v.Name == "Siren" then
-            v:Play()
-         end
-      end
-   end
-})
+-- Fly
+local function startFly()
+	vel.Parent = HumanoidRootPart
+	gyro.Parent = HumanoidRootPart
+	Humanoid.PlatformStand = true
+	flying = true
+	showHint("Fly: ON")
+end
 
--- Ativar visão noturna (efeito)
-MainTab:CreateButton({
-   Name = "Visão Noturna",
-   Callback = function()
-      game.Lighting.Ambient = Color3.fromRGB(0, 255, 0)
-      game.Lighting.OutdoorAmbient = Color3.fromRGB(0, 255, 0)
-   end
-})
+local function stopFly()
+	vel.Parent = nil
+	gyro.Parent = nil
+	Humanoid.PlatformStand = false
+	flying = false
+	showHint("Fly: OFF")
+end
 
--- Resetar visão
-MainTab:CreateButton({
-   Name = "Resetar Visão",
-   Callback = function()
-      game.Lighting.Ambient = Color3.fromRGB(128, 128, 128)
-      game.Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
-   end
-})
+-- Noclip
+local function toggleNoclip()
+	if noclipUnlocked then
+		noclip = not noclip
+		showHint("Noclip: " .. (noclip and "ON" or "OFF"))
+	else
+		showHint("Chave inválida! Pressione K para digitar.")
+	end
+end
+
+-- Verifica a chave digitada
+local function pedirChave()
+	local input = game:GetService("StarterGui"):PromptInput("Digite a chave para desbloquear noclip:")
+	if input == chaveCorreta then
+		noclipUnlocked = true
+		showHint("Chave aceita! Noclip ativado.")
+	else
+		showHint("Chave incorreta.")
+	end
+end
+
+-- Entrada do teclado
+UIS.InputBegan:Connect(function(input, gpe)
+	if gpe then return end
+
+	if input.KeyCode == Enum.KeyCode.F then
+		if flying then stopFly() else startFly() end
+	elseif input.KeyCode == Enum.KeyCode.X then
+		speed = speed + 1
+		showHint("Velocidade: " .. speed)
+	elseif input.KeyCode == Enum.KeyCode.Z then
+		speed = math.max(1, speed - 1)
+		showHint("Velocidade: " .. speed)
+	elseif input.KeyCode == Enum.KeyCode.N then
+		toggleNoclip()
+	elseif input.KeyCode == Enum.KeyCode.K then
+		pedirChave()
+	end
+end)
+
+-- Loop principal
+RunService.RenderStepped:Connect(function()
+	-- Fly
+	if flying then
+		local dir = Vector3.zero
+		if UIS:IsKeyDown(Enum.KeyCode.W) then dir += workspace.CurrentCamera.CFrame.LookVector end
+		if UIS:IsKeyDown(Enum.KeyCode.S) then dir -= workspace.CurrentCamera.CFrame.LookVector end
+		if UIS:IsKeyDown(Enum.KeyCode.A) then dir -= workspace.CurrentCamera.CFrame.RightVector end
+		if UIS:IsKeyDown(Enum.KeyCode.D) then dir += workspace.CurrentCamera.CFrame.RightVector end
+		if UIS:IsKeyDown(Enum.KeyCode.Space) then dir += Vector3.new(0, 1, 0) end
+		if UIS:IsKeyDown(Enum.KeyCode.LeftControl) then dir -= Vector3.new(0, 1, 0) end
+
+		vel.Velocity = dir.Magnitude > 0 and dir.Unit * speed or Vector3.zero
+		gyro.CFrame = workspace.CurrentCamera.CFrame
+	end
+
+	-- Noclip
+	if noclip then
+		for _, part in ipairs(Character:GetDescendants()) do
+			if part:IsA("BasePart") and part.CanCollide then
+				part.CanCollide = false
+			end
+		end
+	end
+end)
