@@ -1,55 +1,85 @@
--- Fly feito por ChatGPT
--- Ative com a tecla "F"
+-- Carregar a Rayfield UI
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
-local Player = game.Players.LocalPlayer
-local Character = Player.Character or Player.CharacterAdded:Wait()
-local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+local Window = Rayfield:CreateWindow({
+   Name = "Script Brookhaven",
+   LoadingTitle = "Carregando Brookhaven...",
+   LoadingSubtitle = "by SeuNome",
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = nil,
+      FileName = "ScriptBrook"
+   },
+   Discord = {
+      Enabled = false,
+      Invite = "",
+      RememberJoins = true
+   },
+   KeySystem = false
+})
 
-local flying = false
-local speed = 5
+local MainTab = Window:CreateTab("Brookhaven Menu", 4483362458)
 
-local UIS = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
+-- Teleporte para Locais
+MainTab:CreateButton({
+   Name = "Ir para Hospital",
+   Callback = function()
+      game.Players.LocalPlayer.Character:MoveTo(Vector3.new(-284.52, 34.31, -353.74))
+   end
+})
 
-local vel = Instance.new("BodyVelocity")
-vel.MaxForce = Vector3.new(1e5, 1e5, 1e5)
-vel.Velocity = Vector3.zero
-vel.P = 1250
+MainTab:CreateButton({
+   Name = "Ir para Banco",
+   Callback = function()
+      game.Players.LocalPlayer.Character:MoveTo(Vector3.new(-433.4, 22.16, -287.5))
+   end
+})
 
-local function startFly()
-    vel.Parent = HumanoidRootPart
-    flying = true
-end
+MainTab:CreateButton({
+   Name = "Ir para Escola",
+   Callback = function()
+      game.Players.LocalPlayer.Character:MoveTo(Vector3.new(-285, 33, -623))
+   end
+})
 
-local function stopFly()
-    flying = false
-    vel.Parent = nil
-end
+-- Modificar velocidade
+MainTab:CreateSlider({
+   Name = "Velocidade do Jogador",
+   Range = {16, 100},
+   Increment = 1,
+   Suffix = "Speed",
+   CurrentValue = 16,
+   Callback = function(Value)
+      game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
+   end,
+})
 
-local direction = Vector3.zero
+-- Trollar Jogadores (ex: tocar sirene)
+MainTab:CreateButton({
+   Name = "Tocar Sirene da Polícia",
+   Callback = function()
+      for _, v in pairs(workspace:GetDescendants()) do
+         if v:IsA("Sound") and v.Name == "Siren" then
+            v:Play()
+         end
+      end
+   end
+})
 
-UIS.InputBegan:Connect(function(input, gpe)
-    if gpe then return end
+-- Ativar visão noturna (efeito)
+MainTab:CreateButton({
+   Name = "Visão Noturna",
+   Callback = function()
+      game.Lighting.Ambient = Color3.fromRGB(0, 255, 0)
+      game.Lighting.OutdoorAmbient = Color3.fromRGB(0, 255, 0)
+   end
+})
 
-    if input.KeyCode == Enum.KeyCode.F then
-        if flying then
-            stopFly()
-        else
-            startFly()
-        end
-    end
-end)
-
-RunService.RenderStepped:Connect(function()
-    if flying then
-        direction = Vector3.zero
-        if UIS:IsKeyDown(Enum.KeyCode.W) then direction = direction + (workspace.CurrentCamera.CFrame.LookVector) end
-        if UIS:IsKeyDown(Enum.KeyCode.S) then direction = direction - (workspace.CurrentCamera.CFrame.LookVector) end
-        if UIS:IsKeyDown(Enum.KeyCode.A) then direction = direction - (workspace.CurrentCamera.CFrame.RightVector) end
-        if UIS:IsKeyDown(Enum.KeyCode.D) then direction = direction + (workspace.CurrentCamera.CFrame.RightVector) end
-        if UIS:IsKeyDown(Enum.KeyCode.Space) then direction = direction + Vector3.new(0, 1, 0) end
-        if UIS:IsKeyDown(Enum.KeyCode.LeftControl) then direction = direction - Vector3.new(0, 1, 0) end
-
-        vel.Velocity = direction.Unit * speed
-    end
-end)
+-- Resetar visão
+MainTab:CreateButton({
+   Name = "Resetar Visão",
+   Callback = function()
+      game.Lighting.Ambient = Color3.fromRGB(128, 128, 128)
+      game.Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
+   end
+})
