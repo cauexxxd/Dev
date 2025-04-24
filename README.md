@@ -1,5 +1,4 @@
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
-local Window = Library.CreateLib("Menu Exclusivo - by Você", "Sentinel")
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/cauexxxd/Dev/refs/heads/main/README.md"))()
 
 -- Aba principal
 local MainTab = Window:NewTab("Principal")
